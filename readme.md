@@ -17,7 +17,7 @@ bundle install
 3. Change your server information.
 Change the following from **drupal8cap/config/deploy.rb** 
 * APP_NAME : Set you app name
-* REPO_URL : Set your repo url e.g git@bitbucket.org:user_name/repo.git or git@github.com:user_name/repo.git
+* REPO_URL : Set your repo url e.g *git@bitbucket.org:user_name/repo.git* or *git@github.com:user_name/repo.git*
 * /usr/local/bin/composer.phar :  change this with your actual composer.phar path in the server
 
 4. Setup your env configuration:
