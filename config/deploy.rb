@@ -55,27 +55,28 @@ namespace :drupal8 do
   task :deploy do
     on roles(:app) do
 
+      # Create database folder backup.
       execute :mkdir, "-p ~/databases-backup"
       within release_path.join(fetch(:app_path)) do
-        info "Backup Database"
+       info "Backup Database"
        execute :drush, "sql-dump > ~/db-backup/db-#{Time.now.strftime("%m-%d-%Y--%H-%M-%S")}.sql"
       end
 
       info "Clear Drush Cache"
       invoke "drupal:drush_clear_cache"
 
-      info "Backup Database"
-      invoke "drupal:backupdb"
+      info "Update Database"
+      invoke "drupal:update:updatedb"
 
       info "Puts site offline "
      invoke "drupal:site_offline"
 
-      # If you have advagg module enabled uncomment the following lines.
+      # If you have advagg module enabled uncomment following lines.
 #       within release_path.join(fetch(:app_path)) do
-#         info "advagg-caf"
+#         info "Advagg Remove all generated files."
 #         execute :drush, 'advagg-caf'
-#         info "advagg-cdc"
-#         execute :drush, 'advagg-cdc'
+#         info "Advagg Force the creation of all new files by incrementing a global counter."
+#         execute :drush, 'advagg-fna'
 #       end
 
       info "Puts site on line "
@@ -83,24 +84,8 @@ namespace :drupal8 do
 
       info "Clear cache"
       invoke "drupal:cache:clear"
-      invoke "drush:cr"
-      execute :drush, "cr"
 
     end
-  end
-  desc 'Reindex data in Solr'
-  task :reindex do
-     on roles(:app) do
-      within current_path do
-          (2..13).each do |i|
-            unless i==9
-              info "Puts site on line " + i.to_s
-              execute :drush, 'sapi-r' , i
-              execute :drush, 'sapi-i' , i
-            end
-          end
-      end
-     end
   end
 
   desc 'Set permissions on old releases before cleanup'

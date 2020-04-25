@@ -4,27 +4,17 @@ namespace :load do
   task :defaults do
     set :composer_download_url, "https://getcomposer.org/installer"
     set :install_composer, true
-    set :install_drush, true
-    set :app_path, 'app'
-    if fetch(:install_drush)
-      set :drush,  "#{fetch(:shared_path)}/drush/drush"
-      set :drush_version, "~6.0.0"
-    end
   end
 end
 
 namespace :deploy do
 
-  desc 'Deploy your project and do an updatedb, feature revert, cache clear...'
+  desc 'Deploy your project and do an updatedb, cache clear...'
   task :full do
     :deploy
 
     if fetch(:install_composer)
       invoke "composer:install_executable"
-    end
-
-    if fetch(:install_drush)
-      invoke "drush:install"
     end
     invoke "drupal:drush_clear_cache"
     invoke "drupal:backupdb"
@@ -38,7 +28,7 @@ end
 # Specific Drupal tasks
 namespace :drupal do
 
-  desc 'Run any Drush command'
+  desc 'Run any Drush commands'
   task :drush do
     ask(:drush_command, "Drush command you want to run (eg. 'cache-clear css-js'). Type 'help' to have a list of available Drush commands.")
     command = fetch(:drush_command)
@@ -63,15 +53,6 @@ namespace :drupal do
     on roles(:app) do
       within release_path.join(fetch(:app_path)) do
         execute :drush, 'core-requirements'
-      end
-    end
-  end
-
-  desc 'Open an interactive shell on a Drupal site.'
-  task :cli do
-    on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
-        execute :drush, 'core-cli'
       end
     end
   end
@@ -103,11 +84,11 @@ namespace :drupal do
     end
   end
 
-  desc 'Revert feature'
-  task :feature_revert do
+  desc 'Import config'
+  task :import_conf do
     on roles(:app) do
       within release_path.join(fetch(:app_path)) do
-        execute :drush, 'features-revert-all -y'
+        execute :drush, 'cim -y'
       end
     end
   end
@@ -164,7 +145,6 @@ namespace :drupal do
 end
 
 namespace :files do
-
   desc "Download drupal sites files (from remote to local)"
   task :download do
     run_locally do
@@ -200,16 +180,4 @@ namespace :files do
     end
   end
 
-end
-
-# Install drush
-namespace :drush do
-  desc "Install Drush"
-  task :install do
-    on roles(:app) do
-      within shared_path do
-        execute :composer, "require drush/drush:#{fetch(:drush_version)}"
-      end
-    end
-  end
 end
